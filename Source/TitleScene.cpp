@@ -26,9 +26,9 @@ void TitleScene::Update()
 		prevButton = false;
 	}
 
-	/*if (CheckHitKey(KEY_INPUT_P)) {
+	if (CheckHitKey(KEY_INPUT_P)) {
 		SceneManager::ChangeScene("PLAY");
-	}*/
+	}
 	if (CheckHitKey(KEY_INPUT_ESCAPE)) {
 		SceneManager::Exit();
 	}

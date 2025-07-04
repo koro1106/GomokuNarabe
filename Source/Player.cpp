@@ -8,7 +8,6 @@ Player::Player()
 {
 	isPlayerTurn = true;
 	PlayerWin = false;
-	
 }
 
 Player::~Player()

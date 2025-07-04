@@ -9,12 +9,14 @@ int map[HEIGHT][WIDTH];
 
 Stage::Stage()
 {
-	backGround = LoadGraph("data/image/backGround.png");
-	
 	// 初期状態のボードを空（0）にする
 	memset(map, 0, sizeof(map));
 	isGameOver = false;
 	Tie = false;
+
+	//map[1][1] = 1;
+	//map[1][2] = 1;
+	//map[1][3] = 1;
 }
 
 Stage::~Stage()
@@ -32,24 +34,36 @@ void Stage::Draw()
 			int y = 50 * j + 100 + 50/2;
 
 			int chip = GetMapValue(i, j);
+			int imageWidth = 30;
+		    int imageHeight = 30;
+
+			int drawX = x - imageWidth / 2;//画像の中心をマウスcクリックした位置に合わせる
+			int drawY = y - imageHeight / 2;
+
 			if (chip == 1) {
-				DrawCircle(x, y, 10, GetColor(0, 255, 255), 1);
+				//DrawCircle(x, y, 10, GetColor(0, 255, 255), 1);
+				DrawGraph(drawX, drawY, playerGraph, TRUE);
 			}
 			if (chip == 2) {
-				DrawCircle(x, y, 10, GetColor(0, 255, 255), 0);
+				//DrawCircle(x, y, 10, GetColor(0, 255, 255), 0);
+				DrawGraph(drawX, drawY, aiGraph, TRUE);
 			}
 		}
 	}
+}
 
-	if (Tie) {
-		DrawString(100, 500, "引き分けです", GetColor(255, 255, 255));
+void Stage::Update()
+{
+	if (isGameOver)
+	{
+		SceneManager::ChangeScene("RESULT");
 	}
-	
 }
 
 int Stage::Put(int x, int y, int value)
 {
-	if (IsCellEmpty(x, y)) {
+	if (IsCellEmpty(x, y)) 
+	{
 		SetMapValue(x, y, value);//コマを置く
 		return 0;
 	}
@@ -60,8 +74,7 @@ int Stage::Put(int x, int y, int value)
 int Stage::GetMapValue(int x, int y)
 {
 	//範囲外なら-1を返す
-	if (x < 0 || x >= WIDTH || y >= HEIGHT)
-		return -1;
+	if (x < 0 || x >= WIDTH || y >= HEIGHT) return -1;
 	return map[y][x]; 
 }
 
@@ -77,76 +90,37 @@ bool Stage::IsCellEmpty(int x, int y)
 
 bool Stage::CheckWin(int turn)
 {
-	//プレイヤー
-	if (turn == 1) {
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				if (GetMapValue(x, y) == turn) {
-					//横チェック
-					if (GetMapValue(x + 1, y) == turn && GetMapValue(x + 2, y) == turn &&
-						GetMapValue(x + 3, y) == turn && GetMapValue(x + 4, y) == turn) {
-						return true;
-					}
-					//縦チェック
-					if (y + 4 < HEIGHT &&
-						GetMapValue(x, y + 1) == turn && GetMapValue(x, y + 2) == turn &&
-						GetMapValue(x, y + 3) == turn && GetMapValue(x, y + 4) == turn) {
-						return true;
-					}
-					//右斜め
-					if ( y + 4 < WIDTH &&
-						GetMapValue(x + 1, y + 1) == turn && GetMapValue(x + 2, y + 2) == turn &&
-						GetMapValue(x + 3, y + 3) == turn && GetMapValue(x + 4, y + 4) == turn) {
-						return true;
-					}
-					//左斜め
-					if (x - 4 > 0 && y + 4 < HEIGHT &&
-						GetMapValue(x - 1, y + 1) == turn && GetMapValue(x - 2, y + 2) == turn &&
-						GetMapValue(x - 3, y + 3) == turn && GetMapValue(x - 4, y + 4) == turn) {
-						return true;
-					}
-				}
+	for (int y = 0; y < HEIGHT; y++) {
+		for (int x = 0; x < WIDTH; x++){
+			if (GetMapValue(x, y) == turn) {
+				//4方向チェック
+				if (CountLine(x, y, 1, 0, turn) == 5)return true;//横
+				if (CountLine(x, y, 0, 1, turn) == 5)return true;//縦
+				if (CountLine(x, y, 1, 1, turn) == 5)return true;//右下
+				if (CountLine(x, y, -1,1, turn) == 5)return true;//左下
 			}
 		}
-		//どれも当てはまってないなら勝っていない
-		return false;
 	}
-	
+	return false;
+}
 
-	//AI
-	if (turn == 2) {
-		for (int y = 0; y < HEIGHT; y++) {
-			for (int x = 0; x < WIDTH; x++) {
-				if (GetMapValue(x, y) == turn) {
-					//横チェック
-					if (GetMapValue(x + 1, y) == turn && GetMapValue(x + 2, y) == turn &&
-						GetMapValue(x + 3, y) == turn && GetMapValue(x + 4, y) == turn) {
-						return true;
-					}
-					//縦チェック
-					if (y + 4 < HEIGHT &&
-						GetMapValue(x, y + 1) == turn && GetMapValue(x, y + 2) == turn &&
-						GetMapValue(x, y + 3) == turn && GetMapValue(x, y + 4) == turn) {
-						return true;
-					}
-					//右斜め
-					if (y + 4 < WIDTH &&
-						GetMapValue(x + 1, y + 1) == turn && GetMapValue(x + 2, y + 2) == turn &&
-						GetMapValue(x + 3, y + 3) == turn && GetMapValue(x + 4, y + 4) == turn) {
-						return true;
-					}
-					//左斜め
-					if (x - 4 > 0 && y + 4 < HEIGHT &&
-						GetMapValue(x - 1, y + 1) == turn && GetMapValue(x - 2, y + 2) == turn &&
-						GetMapValue(x - 3, y + 3) == turn && GetMapValue(x - 4, y + 4) == turn) {
-						return true;
-					}
-				}
-			}
+//方向を指定して、並んでる数をカウントする
+int Stage::CountLine(int x, int y, int dx, int dy, int  turn)
+{
+	int count = 0;
+	for (int i = 0; i < 5; i++) {
+		int nx = x + dx * i;
+		int ny = y + dy * i;
+		if (nx < 0 || ny < 0 || nx >= WIDTH || ny >= HEIGHT) return 0;//範囲外なら終了
+
+		if (GetMapValue(nx, ny) == turn) {
+			count++;//同じコマならカウント
 		}
-		//どれも当てはまってないなら勝っていない
-		return false;
+		else {
+			break;//違うコマなら調べるのやめる
+		}
 	}
+	return count;
 }
 
 bool Stage::isTie()
@@ -160,5 +134,6 @@ bool Stage::isTie()
 	}
 	return true;
 }
+
 
 

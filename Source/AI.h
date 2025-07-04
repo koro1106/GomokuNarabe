@@ -13,7 +13,9 @@ public:
 	void AIstrategy();//攻撃・防御
 	void ResetAIScores();//加算をリセット
 	bool AITurn = false;	//AIのターンか
-private:
 	bool AIWin;
-	bool CheckOpenThree(int target);
+private:
+	bool IsLineN(int x, int y, int n, int dx, int dy, int turn);//n連続ならんでるかどうか
+	void IsThreeLine();
+	void IsTwoLine();
 };

@@ -5,7 +5,6 @@
 
 PlayScene::PlayScene()
 {
-	
 	new Stage();
 	new Player();
 	new AI();
@@ -24,8 +23,6 @@ void PlayScene::Update()
 
 void PlayScene::Draw()
 {
-	
-	DrawString(0, 0, "PLAY SCENE", GetColor(255, 255, 255));
 	DrawString(100, 400, "Push [T]Key To Title", GetColor(255, 255, 255));
 	
 	int offsetX = 450;
@@ -36,5 +33,4 @@ void PlayScene::Draw()
 		//横
 		DrawLine(offsetX, 50 * x + offsetY, 1200, 50 * x + offsetY, GetColor(0, 0, 250));
 	}
-	
 }
